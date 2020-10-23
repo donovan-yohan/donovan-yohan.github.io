@@ -1,0 +1,31 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+
+h1 {
+    color: red;
+}
+
+#container {
+    overflow:hidden;
+    width: 100%;
+    z-index: -1;
+    /* order of colors matters, color put first will be shown least frequently, last color is the base */
+    --gradient-color-1: #ffd239;
+    --gradient-color-2: #16dbc7;
+    --gradient-color-3: #a01be2;
+    --gradient-color-4: #e92236;
+}
+
+#content {
+    position: absolute;
+    height: 500px;
+    top: 0;
+    opacity: 0.1;
+}
+
+#wrapper {
+    height: 500px;
+}
