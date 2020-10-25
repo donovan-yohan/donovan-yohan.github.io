@@ -68,8 +68,6 @@ void main(void) {
     for (int i = 0; i < u_waves.length(); i++) {
         Wave layer = u_waves[i];
 
-        
-
         float noise = smoothstep(
             layer.noiseFloor,
             layer.noiseCeil,

@@ -1,32 +1,32 @@
 import * as THREE from 'https://unpkg.com/three@0.121.1/build/three.module.js';
 import fragment from './fragment.js'
-import vertex from './vertex.js'
 
 // mess with these to change how the animation looks, edit CSS variables to modify gradient colours
 const GRADIENT_VARIABLE_NAME = "gradient-color";
 const THREE_COMPONENT_ID = "container"
-const WAVE_X_FREQ = 0.8;
-const WAVE_Y_FREQ = 0.4;
+const WAVE_X_FREQ = 0.9;
+const WAVE_Y_FREQ = 0.7;
 const WAVE_SPEED = 10.0;
 const WAVE_SPEED_VARIATION = 5.0;
 const WAVE_FLOW = 25.0;
 const WAVE_FLOW_VARIATION = 10.0;
-const SEED = 19.0;
+const SEED = 99.0;
 const WAVE_NOISE_FLOOR = 0.4;
 const WAVE_NOISE_CEIL = 0.5;
-const WAVE_NOISE_VARIATION = 0.07;
+const WAVE_NOISE_VARIATION = 0.085;
 const NOISE_SEPARATION = 55.0;
 
-const INCLINE = 0.009;
-const OFFSET_VERTICAL = -1.5;
+const INCLINE = Math.PI / 12;
 
-var container;
-var camera, scene, renderer;
-var uniforms;
-var startTime;
+
+let container;
+let camera, scene, renderer, mesh;
+let uniforms;
+let startTime;
+let fovYAdjust;
 
 let gradientColors = [];
-let TOTAL_COLORS = 0;
+let TOTAL_COLORS;
 
 init();
 animate();
@@ -44,23 +44,13 @@ function init() {
         },
         iResolution: {
             type: "v2",
-            value: new THREE.Vector2()
+            value: new THREE.Vector2(1920.0, 1080.0)
         },
         u_waves: {
             value: []
         },
         u_total_colors: {
             value: gradientColors.length
-        },
-        u_position: {
-            value: {
-                incline: INCLINE,
-                offsetVert: OFFSET_VERTICAL,
-                noiseFreq: new THREE.Vector2(1.0, 1.0),
-                noiseFlow: 1.0,
-                noiseAmp: 1.0,
-                noiseSeed: 1.0,
-            }
         },
         u_noise_magnitude: {
             value: NOISE_SEPARATION
@@ -82,38 +72,52 @@ function init() {
         uniforms.u_waves.value.push(wave);
     }
 
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-    
-
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff)
 
-    var geometry = new THREE.PlaneBufferGeometry(16, 9);
+    // CAMERA SETTINGS
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / container.clientHeight, 1, 1000);
+    scene.add(camera);
+    camera.position.set(0, 0, 5)
+
+    fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
+
+    var geometry = new THREE.PlaneGeometry(500, fovYAdjust);
 
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
-        vertexShader: vertex,
         fragmentShader: fragment(TOTAL_COLORS)
     });
 
-    var mesh = new THREE.Mesh(geometry, material);
+    mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+
     container.appendChild(renderer.domElement);
 
-    uniforms.iResolution.value.x = window.innerWidth;
-    uniforms.iResolution.value.y = window.innerHeight;
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
+    
+    // Adjust positioning of gradient to match styling
+    // offset uses an appropximation that holds sorta for angles < 45 degrees (PI/4 radians)
+    
+    // reliable part
+    let verticalOffset = Math.tan(INCLINE) * fovYAdjust * camera.aspect / 2.0
+    
+    // approximation
+    verticalOffset += (Math.sin(INCLINE) * fovYAdjust / 2.0 / Math.sin(Math.PI / 2.0 - INCLINE)) / 3
+        
+    mesh.position.set(0, verticalOffset, 0);
+    mesh.rotation.set(0, 0, INCLINE);
+    
     onWindowResize();
 
     window.addEventListener('resize', onWindowResize, false);
 }
 
 function onWindowResize(event) {
-
+    camera.aspect = window.innerWidth / container.clientHeight;
+    renderer.setSize(window.innerWidth, container.clientHeight);
+    fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
     camera.updateProjectionMatrix();
 }
 
