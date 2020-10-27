@@ -16,6 +16,8 @@ const WAVE_NOISE_CEIL = 0.5;
 const WAVE_NOISE_VARIATION = 0.085;
 const NOISE_SEPARATION = 55.0;
 
+const OPACITY = 0.95;
+
 const INCLINE = Math.PI / 12;
 
 let container;
@@ -53,6 +55,9 @@ function init() {
         },
         u_noise_magnitude: {
             value: NOISE_SEPARATION
+        },
+        u_opacity: {
+            value: OPACITY
         }
     };
 
@@ -76,11 +81,11 @@ function init() {
     // CAMERA SETTINGS
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / container.clientHeight, 1, 1000);
     scene.add(camera);
-    camera.position.set(0, 0, 5)
+    camera.position.set(0, 0, 100)
 
     fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
 
-    var geometry = new THREE.PlaneGeometry(500, fovYAdjust);
+    var geometry = new THREE.PlaneBufferGeometry(5000, fovYAdjust);
 
     var material = new THREE.ShaderMaterial({
         uniforms: uniforms,
@@ -95,12 +100,6 @@ function init() {
 
     container.appendChild(renderer.domElement);
 
-    onWindowResize();
-
-    window.addEventListener('resize', onWindowResize, false);
-}
-
-function onWindowResize(event) {
     camera.aspect = window.innerWidth / container.clientHeight;
     renderer.setSize(window.innerWidth, container.clientHeight);
     fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
@@ -113,6 +112,15 @@ function onWindowResize(event) {
         
     mesh.position.set(0, verticalOffset, 0);
     mesh.rotation.set(0, 0, INCLINE);
+
+    onWindowResize();
+
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize(event) {
+    camera.aspect = window.innerWidth / container.clientHeight;
+    renderer.setSize(window.innerWidth, container.clientHeight);
     camera.updateProjectionMatrix();
 }
 

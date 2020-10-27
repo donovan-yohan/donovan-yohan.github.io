@@ -17,6 +17,7 @@ uniform vec2 iResolution;
 uniform float iGlobalTime;
 uniform float u_noise_magnitude;
 uniform Wave u_waves[TOTAL_COLORS];
+uniform float u_opacity;
 
 vec3 blendNormal(vec3 base, vec3 blend, float opacity) {
     return (blend * opacity + base * (1.0 - opacity));
@@ -59,6 +60,8 @@ void main(void) {
     for (int i = 0; i < u_waves.length(); i++) {
         Wave layer = u_waves[i];
 
+        // uv.y takes position value
+        // abs  used to prevent negative values 
         float noise = smoothstep(
             layer.noiseFloor,
             layer.noiseCeil,
@@ -68,11 +71,12 @@ void main(void) {
             )) / 2.0 + 0.48
         );
 
+        // blending amount changes with value at the end
         color = blendNormal(color, layer.color, pow(noise, float(i) * 0.15));
     }
 
     Wave layer = u_waves[0];
 
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, u_opacity);
 }
 `
