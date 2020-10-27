@@ -10,7 +10,7 @@ const WAVE_SPEED = 1.0;
 const WAVE_SPEED_VARIATION = -1.0;
 const WAVE_FLOW = 0.5;
 const WAVE_FLOW_VARIATION = 1.0;
-const SEED = 86.0;
+const SEED = 166.0;
 const WAVE_NOISE_FLOOR = 0.4;
 const WAVE_NOISE_CEIL = 0.5;
 const WAVE_NOISE_VARIATION = 0.085;
@@ -24,7 +24,7 @@ let container;
 let camera, scene, renderer, mesh;
 let uniforms;
 let startTime;
-let fovYAdjust;
+let fovYAdjust, width, height;
 
 let gradientColors = [];
 let TOTAL_COLORS;
@@ -45,7 +45,7 @@ function init() {
         },
         iResolution: {
             type: "v2",
-            value: new THREE.Vector2(1920.0, 1080.0)
+            value: new THREE.Vector2()
         },
         u_waves: {
             value: []
@@ -79,7 +79,10 @@ function init() {
     scene = new THREE.Scene();
 
     // CAMERA SETTINGS
-    camera = new THREE.PerspectiveCamera(50, window.innerWidth / container.clientHeight, 1, 1000);
+    width = window.innerWidth * window.devicePixelRatio;
+    height = container.clientHeight * window.devicePixelRatio;
+
+    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
     scene.add(camera);
     camera.position.set(0, 0, 100)
 
@@ -95,13 +98,12 @@ function init() {
     mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
 
     container.appendChild(renderer.domElement);
 
-    camera.aspect = window.innerWidth / container.clientHeight;
-    renderer.setSize(window.innerWidth, container.clientHeight);
+    renderer.setSize(width, height);
     fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
 
     // reliable part
@@ -119,7 +121,13 @@ function init() {
 }
 
 function onWindowResize(event) {
-    camera.aspect = window.innerWidth / container.clientHeight;
+    width = window.innerWidth * window.devicePixelRatio;
+    height = container.clientHeight * window.devicePixelRatio;
+
+    uniforms.iResolution.value.x = width;
+    uniforms.iResolution.value.y = height;
+    
+    camera.aspect = width / height;
     renderer.setSize(window.innerWidth, container.clientHeight);
     camera.updateProjectionMatrix();
 }
