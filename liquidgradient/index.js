@@ -1,23 +1,22 @@
 import * as THREE from 'https://unpkg.com/three@0.121.1/build/three.module.js';
-import fragment from './fragment.js'
+import fragment from './fragment.js';
 
 // mess with these to change how the animation looks, edit CSS variables to modify gradient colours
 const GRADIENT_VARIABLE_NAME = "gradient-color";
 const THREE_COMPONENT_ID = "container"
-const WAVE_X_FREQ = 0.9;
-const WAVE_Y_FREQ = 0.7;
-const WAVE_SPEED = 10.0;
-const WAVE_SPEED_VARIATION = 5.0;
-const WAVE_FLOW = 25.0;
-const WAVE_FLOW_VARIATION = 10.0;
-const SEED = 99.0;
+const WAVE_X_FREQ = 5.2;
+const WAVE_Y_FREQ = 10.1;
+const WAVE_SPEED = 1.0;
+const WAVE_SPEED_VARIATION = -1.0;
+const WAVE_FLOW = 0.5;
+const WAVE_FLOW_VARIATION = 1.0;
+const SEED = 86.0;
 const WAVE_NOISE_FLOOR = 0.4;
 const WAVE_NOISE_CEIL = 0.5;
 const WAVE_NOISE_VARIATION = 0.085;
 const NOISE_SEPARATION = 55.0;
 
 const INCLINE = Math.PI / 12;
-
 
 let container;
 let camera, scene, renderer, mesh;
@@ -66,8 +65,8 @@ function init() {
             noiseSeed: SEED + 10 * i,
             noiseFloor: WAVE_NOISE_FLOOR,
             noiseCeil: WAVE_NOISE_CEIL + i * WAVE_NOISE_VARIATION,
-            offsetHorz: i % 2 == 0 ? -1 : 1,
-            offsetVert: i % 3 == 0 ? -1 : 1
+            offsetHorz: i % 2 == 0 ? -1 : 1 * WAVE_FLOW_VARIATION,
+            offsetVert: i % 3 == 0 ? -1 : 1 * WAVE_SPEED_VARIATION
         }
         uniforms.u_waves.value.push(wave);
     }
@@ -96,19 +95,6 @@ function init() {
 
     container.appendChild(renderer.domElement);
 
-    
-    // Adjust positioning of gradient to match styling
-    // offset uses an appropximation that holds sorta for angles < 45 degrees (PI/4 radians)
-    
-    // reliable part
-    let verticalOffset = Math.tan(INCLINE) * fovYAdjust * camera.aspect / 2.0
-    
-    // approximation
-    verticalOffset += (Math.sin(INCLINE) * fovYAdjust / 2.0 / Math.sin(Math.PI / 2.0 - INCLINE)) / 3
-        
-    mesh.position.set(0, verticalOffset, 0);
-    mesh.rotation.set(0, 0, INCLINE);
-    
     onWindowResize();
 
     window.addEventListener('resize', onWindowResize, false);
@@ -118,6 +104,15 @@ function onWindowResize(event) {
     camera.aspect = window.innerWidth / container.clientHeight;
     renderer.setSize(window.innerWidth, container.clientHeight);
     fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
+
+    // reliable part
+    let verticalOffset = Math.tan(INCLINE) * fovYAdjust * camera.aspect / 2.0
+    
+    // approximation
+    verticalOffset += (Math.sin(INCLINE) * fovYAdjust / 2.0 / Math.sin(Math.PI / 2.0 - INCLINE)) / 3
+        
+    mesh.position.set(0, verticalOffset, 0);
+    mesh.rotation.set(0, 0, INCLINE);
     camera.updateProjectionMatrix();
 }
 
