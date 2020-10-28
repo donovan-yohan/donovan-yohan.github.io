@@ -6,11 +6,11 @@ const GRADIENT_VARIABLE_NAME = "gradient-color";
 const THREE_COMPONENT_ID = "container"
 const WAVE_X_FREQ = 5.2;
 const WAVE_Y_FREQ = 10.1;
-const WAVE_SPEED = 1.0;
+const WAVE_SPEED = 2.0;
 const WAVE_SPEED_VARIATION = -1.0;
-const WAVE_FLOW = 0.5;
+const WAVE_FLOW = -1.5;
 const WAVE_FLOW_VARIATION = 1.0;
-const SEED = 166.0;
+const SEED = 196.0;
 const WAVE_NOISE_FLOOR = 0.4;
 const WAVE_NOISE_CEIL = 0.5;
 const WAVE_NOISE_VARIATION = 0.085;
@@ -102,10 +102,14 @@ function init() {
     renderer.setPixelRatio(window.devicePixelRatio);
 
     container.appendChild(renderer.domElement);
-
-    renderer.setSize(width, height);
     fovYAdjust = camera.position.z * camera.getFilmHeight() / camera.getFocalLength();
 
+    onWindowResize();
+
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize(event) {
     // reliable part
     let verticalOffset = Math.tan(INCLINE) * fovYAdjust * camera.aspect / 2.0
     
@@ -114,14 +118,8 @@ function init() {
         
     mesh.position.set(0, verticalOffset, 0);
     mesh.rotation.set(0, 0, INCLINE);
-
-    onWindowResize();
-
-    window.addEventListener('resize', onWindowResize, false);
-}
-
-function onWindowResize(event) {
-    width = window.innerWidth * window.devicePixelRatio;
+    
+    width = container.clientWidth * window.devicePixelRatio;
     height = container.clientHeight * window.devicePixelRatio;
 
     uniforms.iResolution.value.x = width;

@@ -12,7 +12,7 @@ h1 {
 #container {
     position: absolute;
     display: flex;
-    overflow-x: hidden;
+    overflow: hidden;
     justify-content: center;
     top: 0;
     left:0;
@@ -28,6 +28,7 @@ h1 {
 
 .header {
     position: absolute;
+    overflow: hidden;
     top: 0;
     width: 1000px;
     max-width: 1000px; 
